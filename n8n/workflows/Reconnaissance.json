@@ -1,0 +1,572 @@
+{
+  "name": "Reconnaissance",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "Status",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2448,
+        560
+      ],
+      "id": "4c855e80-a24b-484d-b5c2-7bfc4df4c363",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "executeOnce": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Execute_Once', ``, 'boolean') }}",
+        "command": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Command', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.executeCommandTool",
+      "typeVersion": 1,
+      "position": [
+        -2096,
+        784
+      ],
+      "id": "844714da-ccaf-4a8e-bac1-56b3f9405e5c",
+      "name": "Execute Command",
+      "retryOnFail": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "maxOutputTokens": 32000,
+          "temperature": 0.1,
+          "topK": 15,
+          "topP": 0.9,
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -2256,
+        784
+      ],
+      "id": "a74d3be4-0aa0-4699-86af-9ddc52c702e0",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IfPqSk1lHvj0n7Kf",
+          "name": "Google Gemini(PaLM) Api saverio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Status }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=## **ROLE DEFINITION**\n\nYou are an autonomous AI-powered Reconnaissance Agent, the **first node in a multi-phase penetration testing chain**. You specialize **only in passive and active information gathering** based on a single input: an IP address or a domain, if the **target is a subdomain**, scan **ONLY** that.\n\n## **OBJECTIVE**\n\nYour mission is to **collect and organize intelligence** on the specified target (domain, subdomain or IP address) through reconnaissance techniques, and output a structured JSON containing **discoveries and artifacts** to assist the subsequent **Network Scanning AI Agent**.\n\n## **CONTEXT**\n\nThis agent operates in the **Reconnaissance phase** of a Penetration Testing Lifecycle, aligning with MITRE ATT\\&CK (TA0043 - Reconnaissance). It leverages **open-source intelligence (OSINT)** and **Kali Linux-based tools** to prepare detailed contextual insights on the target without triggering alarms.\n\n## **INSTRUCTIONS**\n\n1. Accept only **one input**: a valid IP address or domain, If the **target is a subdomain**, scan **ONLY** that.\n2. Perform **only reconnaissance** (passive and active techniques).\n3. Use available tools and modules from Kali Linux to:\n   * Identify organization-related metadata\n   * Enumerate subdomains, WHOIS, DNS, registrar, ASN, geolocation\n   * Fetch open-source profiles, website headers, tech stack\n   * Conduct non-intrusive scans (e.g., nslookup, whois, dnsenum)\n4. processes **the output of commands one at a time**, so as not to overload the AI model.\n5. Structure the data in JSON for output and don't add anything else just the json.\n6. Respect JSON structure order in OUTPUT FORMAT.\n7. **Do not attempt vulnerability assessment, port scanning, or exploitation.**\n\n## **CONSTRAINTS**\n\n* **Input:** Only a single domain or IP (reject any other input type).\n* No scanning beyond reconnaissance (e.g., no nmap, masscan, nikto).\n* Must work in an isolated, stateless fashion (no session memory).\n* Avoid active fingerprinting that might alert defenses unless explicitly passive.\n* Adhere to legal and ethical boundaries (no unauthorized access).\n\n## **TOOLS AVAILABLE**\n\n* `whois`\n* `nslookup`, `dig`, `host`\n* `dnsenum`, `dnsrecon`\n* `whatweb`, `wafw00f`\n* `sublist3r`, `amass`\n* `curl`, `wget` (for headers, robots.txt)\n* `ipinfo.io`, `shodan` API (optional if API keys present)\n\n## **INPUT VARIABLES**\n\n```json\n{\n  \"target\": \"example.com\" \n}\n```\n\n## **OUTPUT FORMAT**\n\n```json\n{\n  \"target\": \"\",\n  \"reconnaissance\": {\n    \"dns_info\": {\n      \"A\": [],\n      \"MX\": [],\n      \"NS\": [],\n      \"TXT\": []\n    },\n    \"whois_data\": {},\n    \"subdomains\": [],\n    \"technologies\": [],\n    \"geolocation\": {}, \n    \"asn_info\": {\n      \"asn\": \"\",\n      \"org\": \"\",\n      \"prefix\": \"\",\n      \"country\": \"\"\n    },\n    \"metadata\": {\n      \"http_headers\": {},\n      \"title\": \"\",\n      \"waf_detected\": false\n    },\n    \"osint_profiles\": {\n      \"linked_profiles\": [],\n      \"emails\": [],\n      \"certificates\": []\n    }\n  }\n}\n```\n## **EXAMPLES**\n\n**Input:**\n\n```json\n{ \"target\": \"example.org\" }\n```\n\n**Output:**\n\n```json\n{\n  \"target\": \"example.org\",\n  \"reconnaissance\": {\n    \"dns_info\": {\n      \"A\": [\"93.184.216.34\"],\n      \"MX\": [\"mail.example.org\"],\n      \"NS\": [\"ns1.example.org\", \"ns2.example.org\"],\n      \"TXT\": [\"v=spf1 include:spf.example.org -all\"]\n    },\n    \"whois_data\": {\n      \"registrar\": \"Example Registrar, Inc.\",\n      \"creation_date\": \"2001-04-10\",\n      \"expiry_date\": \"2026-04-10\",\n      \"registrant_country\": \"US\"\n    },\n    \"subdomains\": [\"blog.example.org\", \"shop.example.org\"],\n    \"technologies\": [\"Apache\", \"WordPress\", \"PHP\"],\n    \"geolocation\": {\n      \"country\": \"United States\",\n      \"city\": \"Los Angeles\"\n    },\n    \"asn_info\": {\n      \"asn\": \"AS15133\",\n      \"org\": \"Edgecast Networks\"\n    },\n    \"metadata\": {\n      \"robots_txt\": [\"/admin/\", \"/secret/\"],\n      \"http_headers\": {\n        \"server\": \"Apache/2.4.46\",\n        \"x-powered-by\": \"PHP/7.4.10\"\n      },\n      \"title\": \"Example Website\",\n      \"waf_detected\": false\n    },\n    \"osint_profiles\": {\n      \"linked_profiles\": [\"https://twitter.com/example\", \"https://github.com/example\"],\n      \"emails\": [\"admin@example.org\"],\n      \"certificates\": [\"CN=*.example.org\"]\n    }\n  }\n}\n```",
+          "maxIterations": 100
+        }
+      },
+      "id": "c554ddd0-e70d-4861-97e6-95f63dacc915",
+      "name": "Recon AI",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -2192,
+        560
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "[\n  {\n    \"target\": \"\",\n    \"reconnaissance\": {\n      \"dns_info\": {\n        \"A\": [],\n        \"MX\": [],\n        \"NS\": [],\n        \"TXT\": []\n      },\n      \"whois_data\": {},\n      \"subdomains\": [],\n      \"technologies\": [],\n      \"geolocation\": {}, \n      \"asn_info\": {\n        \"asn\": \"\",\n        \"org\": \"\",\n        \"prefix\": \"\",\n        \"country\": \"\"\n      },\n      \"metadata\": {\n        \"http_headers\": {},\n        \"title\": \"\",\n        \"waf_detected\": false\n      },\n      \"osint_profiles\": {\n        \"linked_profiles\": [],\n        \"emails\": [],\n        \"certificates\": []\n      }\n    }\n  }\n]",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -1968,
+        784
+      ],
+      "id": "635774cd-15dd-4251-9264-5c0b9843620e",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "jsCode": "function cleanObject(obj) {\n  // Gestione di valori null/undefined\n  if (obj === null || obj === undefined) {\n    return undefined;\n  }\n  \n  // Gestione degli array\n  if (Array.isArray(obj)) {\n    const cleanedArray = obj.map(cleanObject).filter(item => item !== undefined);\n    return cleanedArray.length === 0 ? undefined : cleanedArray;\n  }\n  \n  // Gestione degli oggetti\n  if (typeof obj === 'object') {\n    const cleanedObj = {};\n    for (const [key, value] of Object.entries(obj)) {\n      const cleanedValue = cleanObject(value);\n      if (cleanedValue !== undefined) {\n        cleanedObj[key] = cleanedValue;\n      }\n    }\n    return Object.keys(cleanedObj).length === 0 ? undefined : cleanedObj;\n  }\n  \n  // Gestione stringhe vuote\n  if (obj === '') {\n    return undefined;\n  }\n  \n  // Mantieni altri valori (boolean, numeri, stringe non vuote)\n  return obj;\n}\n\nconst cleaned = cleanObject($input.first().json.output);\nconst result = cleaned !== undefined ? [cleaned] : [];\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1648,
+        448
+      ],
+      "id": "91e9480b-5eca-4c04-904a-583b5442a3f8",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "maxOutputTokens": 32000,
+          "temperature": 0.1,
+          "topK": 15,
+          "topP": 0.9,
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1872,
+        992
+      ],
+      "id": "ab6cb314-1086-4d45-a396-e238deef2e84",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IfPqSk1lHvj0n7Kf",
+          "name": "Google Gemini(PaLM) Api saverio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -832,
+        448
+      ],
+      "id": "ae1c0188-dd10-4389-8570-96f58874fd1b",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "h6D25MulIhF4AxXz",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        672
+      ],
+      "id": "2bee80b4-3978-4ca6-8c6d-2f51bff66be4",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IfPqSk1lHvj0n7Kf",
+          "name": "Google Gemini(PaLM) Api saverio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $('Code1').item.json.text }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "Target",
+                "value": "={{ $('Code').item.json.target }}"
+              },
+              {
+                "name": "Reconnaissance",
+                "value": "={{ $('Code').item.json.reconnaissance }}"
+              },
+              {
+                "name": "Phase",
+                "value": "Reconnaissance"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -720,
+        672
+      ],
+      "id": "c8e94b78-eb9a-40e1-ac09-1a5bc3dbe2b3",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        880
+      ],
+      "id": "bcbeaf4a-b2a3-4758-afd4-4ca29b4f729d",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.reconnaissance }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=In base alle informazioni JSON in input che ricevi, effettua una descrizione dettagliata in italiano della fase di Reconnaissance, ricordati che ti trovi in un contesto di penetration test, formattalo correttamente per una lettura rivolta ad una persona.\n\n##IMPORTANTE\nNon formattare parole in grassetto o aumentare le dimensioni.\nNon usare **ASSOLUTAMENTE** caratteri speciali come *#`{}[] nell'aoutput e se ci sono **ELIMINALI**.\nUsa i numeri se crei una lista.\nCerca di stipulare una descrizione più pulita possibile.\nInizia la descrizione con: La fase di ..."
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -1424,
+        448
+      ],
+      "id": "269328fa-fd99-4a2d-b8db-a6fbfd671126",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a51d659c-832a-4736-a4d2-1f287b165755",
+              "name": "Status",
+              "value": "Extract the information from the Reconnaissance phase and perform the Network scan phase",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -224,
+        448
+      ],
+      "id": "764a31ca-281d-4142-8acf-f6810cd87c5e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4620336f-5a95-4d2a-b64a-1acb61742233",
+              "name": "Error",
+              "value": "Something went wrong",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1648,
+        672
+      ],
+      "id": "76dc6dce-dac4-49b0-b0da-2425f7894d54",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "maxOutputTokens": 32000,
+          "temperature": 0.1,
+          "topK": 15,
+          "topP": 0.9,
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1328,
+        672
+      ],
+      "id": "cae70a61-f7e1-4c66-83f3-2bf0d623de77",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IfPqSk1lHvj0n7Kf",
+          "name": "Google Gemini(PaLM) Api saverio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "metadata"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        448
+      ],
+      "id": "0b558edc-57c7-4923-a109-4fabdde02008",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.text.replace(/[*#`{}\\[\\]]/g, '')\n\nreturn [{ text: data }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        448
+      ],
+      "id": "39adb818-bdcd-4781-80ea-43ccf96bdf6f",
+      "name": "Code1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Recon AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "ai_tool": [
+        [
+          {
+            "node": "Recon AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Recon AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recon AI": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Recon AI",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2e120ef4-6f4c-435b-98c8-615e4f325e8a",
+  "meta": {
+    "templateId": "self-building-ai-agent",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b343927cce3775c9dbc821d844e218ccc51be6e61f6f7b42cf1e14e6cc677bdd"
+  },
+  "id": "cNhEHmChYX3zDt8x",
+  "tags": []
+}

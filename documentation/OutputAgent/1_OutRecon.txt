@@ -1,0 +1,38 @@
+[
+  {
+    "target": "skita.saveriovale.me",
+    "reconnaissance": {
+      "geolocation": {
+        "city": "Broomfield",
+        "country": "US"
+      },
+      "whois_data": {
+        "registrant_country": "US"
+      },
+      "dns_info": {
+        "A": [
+          "174.138.7.127"
+        ]
+      },
+      "metadata": {
+        "http_headers": {
+          "Date": "Mon, 14 Jul 2025 09:08:56 GMT",
+          "Content-Type": "text/html",
+          "X-Powered-By": "PHP/5.2.4-2ubuntu5.10",
+          "Server": "Apache/2.2.8 (Ubuntu) DAV/2"
+        },
+        "waf_detected": false
+      },
+      "asn_info": {
+        "org": "DigitalOcean, LLC",
+        "prefix": "174.138.0.0/17",
+        "asn": "AS14061",
+        "country": "US"
+      },
+      "technologies": [
+        "Apache/2.2.8",
+        "PHP/5.2.4-2ubuntu5.10"
+      ]
+    }
+  }
+]

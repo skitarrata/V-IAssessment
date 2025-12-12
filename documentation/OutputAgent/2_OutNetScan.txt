@@ -1,0 +1,90 @@
+[
+  {
+    "Network_scan": [
+      {
+        "traceroute": [
+          "172.17.0.1",
+          "5.101.110.7",
+          "174.138.7.127"
+        ],
+        "host": "174.138.7.127",
+        "state": "up",
+        "os": "Linux 4.15 - 5.19, Linux 5.0 - 5.14",
+        "open_ports": [
+          {
+            "version": "vsftpd 2.3.4",
+            "port": 21,
+            "protocol": "tcp",
+            "service": "ftp"
+          },
+          {
+            "protocol": "tcp",
+            "version": "Linux telnetd",
+            "port": 23,
+            "service": "telnet"
+          },
+          {
+            "protocol": "tcp",
+            "port": 25,
+            "service": "smtp"
+          },
+          {
+            "service": "http",
+            "protocol": "tcp",
+            "port": 80,
+            "version": "Apache httpd 2.2.8 ((Ubuntu) DAV/2)"
+          },
+          {
+            "port": 445,
+            "protocol": "tcp",
+            "version": "Samba smbd 3.0.20-Debian",
+            "service": "netbios-ssn"
+          },
+          {
+            "protocol": "tcp",
+            "port": 1524,
+            "service": "ingreslock",
+            "version": "?"
+          },
+          {
+            "version": "UnrealIRCd",
+            "port": 6667,
+            "service": "irc",
+            "protocol": "tcp"
+          }
+        ],
+        "notes": [
+          "Anonymous FTP login allowed on port 21.",
+          "FTP PASV IP mismatch detected on port 21.",
+          "HTTP title \"Metasploitable2 - Linux\" found on port 80.",
+          "Samba 3.0.20-Debian detected on port 445.",
+          "SMB message signing is disabled on port 445 (dangerous configuration).",
+          "Service on port 1524 fingerprint suggests a shell.",
+          "UnrealIRCd detected on port 6667."
+        ],
+        "scripts_output": {
+          "ssh-hostkey": {
+            "fingerprint": "256 d3:20:85:63:77:5a:f2:06:64:e1:77:ff:98:f2:6c:4b (ECDSA), 256 fe:7a:0d:47:e6:9f:e8:8b:b5:be:4e:d2:11:87:65:ee (ED25519)",
+            "key_type": "ECDSA, ED25519"
+          },
+          "ftp-syst": "STAT: FTP server status: Connected to 167.99.32.212 Logged in as ftp TYPE: ASCII No session bandwidth limit Session timeout in seconds is 300 Control connection is plain text Data connections will be plain text vsFTPd 2.3.4 - secure, fast, stable End of status",
+          "http-server-header": "Apache/2.2.8 (Ubuntu) DAV/2",
+          "http-title": "Metasploitable2 - Linux",
+          "ftp-anon": "Anonymous FTP login allowed (FTP code 230). Can't get directory listing: PASV IP 172.17.0.2 is not the same as 174.138.7.127",
+          "irc-info": "users: 1, servers: 1, lusers: 1, lservers: 0, server: irc.Metasploitable.LAN, version: Unreal3.2.8.1. irc.Metasploitable.LAN, uptime: 0 days, 1:16:22, source ident: nmap, source host: 52448309.FDE2B573.67866405.IP, error: Closing Link: jmmzzyfxt[167.99.32.212] (Quit: jmmzzyfxt)",
+          "smb-security-mode": "account_used: guest, authentication_level: user, challenge_response: supported, message_signing: disabled (dangerous, but default)",
+          "smb-os-discovery": "OS: Unix (Samba 3.0.20-Debian), Computer name: 8222587d7827, System time: 2025-07-14T06:16:44-04:00"
+        }
+      }
+    ],
+    "target": "skita.saveriovale.me",
+    "source": {
+      "from_reconnaissance": {
+        "technologies": [
+          "Apache/2.2.8",
+          "PHP/5.2.4-2ubuntu5.10"
+        ]
+      }
+    }
+  }
+]

@@ -1,0 +1,670 @@
+{
+  "name": "Reporting",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "Status",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        -1200
+      ],
+      "id": "4ea5e51b-c0e8-4139-95ce-8731f0deb621",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Status }}",
+        "options": {
+          "systemMessage": "=## **REGOLE**\n\n1. Non omettere nessuna vulnerabilità, tecnica, prova o osservazione raccolta.\n2. Rileva **tutte** le vulnerabilità, classificandole con *severity* (gravità) che si riferisce all'impatto o alle conseguenze di un evento dannoso se dovesse verificarsi e *risk* (rischio) che è una combinazione della probabilità che un evento si verifichi e della sua gravità.\n3. Ogni vulnerabilità deve contenere: descrizione, evidenze, impatto, CVSS score, exploit usato (se presente), remediation dettagliata.\n4. Segui una struttura logica, conforme a standard professionali (es. OSSTMM, PTES, OWASP).\n5. Elabora in HTML strutturato, pronto per la pubblicazione o il parsing automatizzato.\n6. Nessuna inferenza o invenzione: usa solo informazioni contenute nel vector store.\n7. Assicurati che ogni dato sia replicabile e coerente con il contesto tecnico.\n8. Rimuovi ogni riferimento al fatto che il report sia generato da un AI.\n\n## **OBIETTIVO**\n\nFornire un **report tecnico completo** in HTML, progettato per:\n\n* documentare metodicamente l’intero processo del penetration test,\n* classificare ogni vulnerabilità scoperta,\n* includere evidenze e raccomandazioni tecniche,\n* distinguere chiaramente tra severità (tecnica) e rischio (organizzativo),\n* permettere la tracciabilità e riproducibilità degli exploit eseguiti.\n\n## **CONTESTO**\n\nIl sistema ha accesso a un vector store strutturato contenente:\n\n* output tecnici di scansioni,\n* metadati tecnici,\n* dettagli exploit e tool usati (se esistenti),\n* informazioni sulle configurazioni di rete e servizi esposti.\n\n## **ISTRUZIONI**\n\n1. **Analizza** il vector store per ogni entità.\n2. **Per ogni vulnerabilità**:\n\n   * Assegna **ID univoco** (es: VULN-001).\n   * Fornisci:\n\n     * Titolo\n     * Descrizione tecnica\n     * *Severity* (Bassa, Media, Alta, Critica)\n     * *Risk* (valutazione contestuale)\n     * CVSS (assegnalo da 1 a 10 in base alle informazioni)\n     * Evidenze (output, screenshot base64, comandi usati)\n     * Proof of Concept (PoC), se disponibile\n     * Raccomandazione tecnica per mitigazione\n     * Riferimenti a CVE, CWE o OWASP\n3. Riassumi i risultati in una tabella iniziale (Executive Summary).\n4. Mantieni il formato HTML valido e accessibile.\n\n## **AVVERTENZE**\n\n* Non generare testo di fantasia: *solo informazioni effettivamente presenti* nel vector store o documenti.\n* Non includere codice o comandi se non effettivamente usati e confermati.\n* Evita generalizzazioni: ogni finding deve avere **dati concreti**.\n* Nessuna narrativa, solo esposizione tecnica.\n* **Mantieni una struttura pulita e professionale** tieni conto che il formato deve essere trasferito in una pagina A4.\n* **Verifica la compatibilità con i principali browser per la conversione in PDF**.\n\n## **SPECIFICHE HTML**\n\nREQUISITI CRITICI DI OUTPUT:\n\n* La tua risposta deve INIZIARE con: `<!DOCTYPE html>`\n* La tua risposta deve TERMINARE con: `</html>`\n* NON racchiudere la risposta in blocchi di codice come \\`\\`\\`html\n* NON usare formattazione Markdown intorno al codice HTML\n* Genera SOLO il contenuto HTML grezzo, nient’altro\n* Considera questo compito come la creazione di un file `.html`, non la visualizzazione del codice\n\n1. STRUTTURA DEL LAYOUT\n\n* **Titolo principale:** \"Report Penetration Test\", centrato e in grassetto\n* **Data del report:** visibile chiaramente sotto il titolo, con uno spazio evidente (es. margine di 20–30px)\n* **Layout:** centrato, larghezza massima di 900px per ottimizzare la stampa\n* **Margini:** adatti alla stampa in formato A4\n\n2. SEZIONI OBBLIGATORIE\n\nOrganizza il contenuto in sezioni chiaramente separate:\n\n* **Executive Summary**\n* **Reconnaissance**\n* **Network Scanning**\n* **Enumeration**\n* **Vulnerability**\n* **Exploitation**\n* **Recommendations**\n\n3. STILE PER LE VULNERABILITÀ\n\nEvidenzia le vulnerabilità con bordi colorati in base alla gravità:\n\n* **Critica:** bordo rosso spesso (3px), sfondo rosso chiaro (#ffebee)\n* **Alta:** bordo arancione (2px), sfondo arancione chiaro (#fff3e0)\n* **Media:** bordo giallo (2px), sfondo giallo chiaro (#fffde7)\n* **Bassa:** bordo blu (1px), sfondo blu chiaro (#e3f2fd)\n* **Informativa:** bordo grigio (1px), sfondo grigio chiaro (#f5f5f5)\n\n4. TIPOGRAFIA E STILE\n\n* **Formato:** A4\n* **Font principale:** Arial, sans-serif per leggibilità\n* **Font tecnico:** Courier New, monospace per output tecnici\n* **Dimensioni:** 12pt per il testo normale, 14pt per i titoli delle sezioni\n* **Colori:** schema professionale (nero su bianco, accenti colorati per la severità)\n\n5. ELEMENTI SPECIFICI\n\n* **Tabelle:** bordi sottili, intestazione con sfondo grigio chiaro\n* **Sezioni tecniche:** sfondo grigio molto chiaro per distinguerle\n* **Intestazioni:** numerate e con margini coerenti\n* **Footer:** con clausola di riservatezza\n\n#### 6. TEMPLATE CSS INTEGRATO\n\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Penetration Test Report</title>\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            max-width: 900px;\n            margin: 0 auto;\n            padding: 20px;\n            line-height: 1.6;\n            color: #333;\n        }\n        .header {\n            text-align: center;\n            border-bottom: 3px solid #333;\n            padding-bottom: 20px;\n            margin-bottom: 30px;\n            position: relative;\n        }\n        .report-date {\n            position: absolute;\n            right: 0;\n            top: 0;\n            font-size: 14px;\n            color: #666;\n        }\n        .section {\n            margin-bottom: 40px;\n            page-break-inside: avoid;\n        }\n        .section h2 {\n            color: #2c3e50;\n            border-bottom: 2px solid #3498db;\n            padding-bottom: 10px;\n        }\n        .finding {\n            margin: 20px 0;\n            padding: 15px;\n            border-radius: 5px;\n        }\n        .critical { border-left: 5px solid #e74c3c; background-color: #ffebee; }\n        .high { border-left: 5px solid #f39c12; background-color: #fff3e0; }\n        .medium { border-left: 5px solid #f1c40f; background-color: #fffde7; }\n        .low { border-left: 5px solid #3498db; background-color: #e3f2fd; }\n        .info { border-left: 5px solid #95a5a6; background-color: #f5f5f5; }\n        .code {\n            font-family: 'Courier New', monospace;\n            background-color: #f8f9fa;\n            padding: 10px;\n            border-radius: 3px;\n            font-size: 11px;\n        }\n        table {\n            width: 100%;\n            border-collapse: collapse;\n            margin: 15px 0;\n        }\n        th, td {\n            border: 1px solid #ddd;\n            padding: 8px;\n            text-align: left;\n        }\n        th {\n            background-color: #f2f2f2;\n            font-weight: bold;\n        }\n        .executive-summary {\n            background-color: #f8f9fa;\n            padding: 20px;\n            border-radius: 5px;\n            margin-bottom: 30px;\n        }\n        @media print {\n            body { font-size: 12pt; }\n            .section { page-break-inside: avoid; }\n        }\n    </style>\n</head>\n<body>\n    <!-- HTML content will be generated dynamically -->\n</body>\n</html>\n\n## **ESEMPIO OUTPUT**\n\n```html\n<!DOCTYPE html>\n<html lang=\"it\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Penetration Test Report</title>\n    <style>\n        @page {\n            size: A4;\n            margin: 2cm;\n        }\n        body {\n            font-family: Arial, sans-serif;\n            max-width: 900px;\n            margin: 0 auto;\n            padding: 20px;\n            line-height: 1.6;\n            color: #333;\n            background: white;\n        }\n        .header {\n            text-align: center;\n            font-weight: bold;\n            font-size: 24px;\n            margin-bottom: 10px;\n        }\n        .report-date {\n            text-align: center;\n            font-size: 14px;\n            margin-bottom: 30px;\n            color: #666;\n        }\n        .section {\n            margin-bottom: 40px;\n            page-break-inside: avoid;\n        }\n        .section h2 {\n            color: #2c3e50;\n            border-bottom: 2px solid #3498db;\n            padding-bottom: 10px;\n            font-size: 14pt;\n        }\n        .finding {\n            margin: 20px 0;\n            padding: 15px;\n            border-radius: 5px;\n        }\n        .critical { border-left: 5px solid #e74c3c; background-color: #ffebee; }\n        .high { border-left: 5px solid #f39c12; background-color: #fff3e0; }\n        .medium { border-left: 5px solid #f1c40f; background-color: #fffde7; }\n        .low { border-left: 5px solid #3498db; background-color: #e3f2fd; }\n        .info { border-left: 5px solid #95a5a6; background-color: #f5f5f5; }\n        .executive-summary {\n            background-color: #f8f9fa;\n            padding: 20px;\n            border-radius: 5px;\n            margin-bottom: 30px;\n        }\n        .footer {\n            text-align: center;\n            font-size: 10pt;\n            color: #999;\n            border-top: 1px solid #ccc;\n            padding-top: 20px;\n            margin-top: 50px;\n        }\n        @media print {\n            body {\n                font-size: 12pt;\n                -webkit-print-color-adjust: exact;\n            }\n            .section {\n                page-break-inside: avoid;\n            }\n        }\n    </style>\n</head>\n<body>\n    <div class=\"header\">Penetration Test Report</div>\n    <div class=\"report-date\">22 Luglio 2025</div>\n\n    <div class=\"section\">\n        <h2>1. Executive Summary</h2>\n        <div class=\"executive-summary\">\n            Questo report riassume i risultati del penetration test condotto sull'infrastruttura aziendale.\n        </div>\n    </div>\n\n    <div class=\"section\">\n        <h2>2. Reconnaissance</h2>\n        <p>N/A</p>\n    </div>\n\n    <div class=\"section\">\n        <h2>3. Network Scanning</h2>\n        <p>N/A</p>\n    </div>\n\n    <div class=\"section\">\n        <h2>4. Enumeration</h2>\n        <p>N/A</p>\n    </div>\n\n    <div class=\"section\">\n        <h2>5. Vulnerability Detection</h2>\n        <div class=\"finding critical\">\n            <strong>RCE in login endpoint</strong><br>\n            È stata identificata una Remote Code Execution nella rotta /api/login.\n        </div>\n        <div class=\"finding low\">\n            <strong>Directory Listing Attivo</strong><br>\n            Il server web consente l'enumerazione delle directory su /uploads/.\n        </div>\n    </div>\n\n    <div class=\"section\">\n        <h2>6. Exploitation</h2>\n        <p>N/A</p>\n    </div>\n\n    <div class=\"section\">\n        <h2>7. Post-Exploitation</h2>\n        <p>N/A</p>\n    </div>\n\n    <div class=\"section\">\n        <h2>8. Recommendations</h2>\n        <p>Applicare patch di sicurezza, disattivare il listing delle directory, eseguire un hardening dell'infrastruttura.</p>\n    </div>\n\n    <div class=\"footer\">\n        Questo documento è riservato e destinato esclusivamente all'organizzazione destinataria. La distribuzione non autorizzata è vietata.\n    </div>\n</body>\n</html>\n```",
+          "maxIterations": 100
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        464,
+        -1200
+      ],
+      "id": "e7a71a60-df1a-47c1-9a8d-5adda631e651",
+      "name": "Report_TECH",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "URL/HTML to PDF",
+        "convertType": "htmlToPDF",
+        "html": "={{ $json.output }}",
+        "advancedOptions": {
+          "name": "Report_TECH",
+          "paperSize": "a4",
+          "margins": "30px 10px 10px 10px",
+          "expiration": 60
+        }
+      },
+      "type": "n8n-nodes-pdfco.PDFco Api",
+      "typeVersion": 1,
+      "position": [
+        912,
+        -1328
+      ],
+      "id": "5286aac1-0eb3-4f43-940a-0bc448010f94",
+      "name": "PDFco_1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "pdfcoApi": {
+          "id": "HXoQ4hn4lFYgxC2F",
+          "name": "PDF.co account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When Executed by Another Workflow').item.json.Status }}",
+        "options": {
+          "systemMessage": "=## **REGOLE**\n\n1. Non tralasciare nessuna vulnerabilità, tecnica, evidenza o osservazione rilevata durante il test.\n2. Rileva **tutte** le problematiche, classificandole in base alla *gravità* (quanto può essere dannosa una vulnerabilità) e al *rischio* (probabilità che venga sfruttata).\n3. Ogni voce deve includere: descrizione, prova del problema, impatto, punteggio di rischio (CVSS), se è stato possibile sfruttarla (exploit), e una soluzione pratica.\n4. Struttura il report secondo standard riconosciuti (OSSTMM, PTES, OWASP), mantenendo una logica chiara.\n5. Il contenuto dev'essere generato in HTML ben strutturato, pronto per pubblicazione o conversione automatica.\n6. Non inventare nulla: usa solo dati realmente disponibili nel vector store.\n7. Ogni informazione deve essere verificabile e coerente.\n8. Evita qualsiasi riferimento al fatto che il report è stato generato da un’AI.\n\n## **OBIETTIVO**\n\nFornire un **report chiaro e completo**, progettato per:\n\n* Documentare ogni fase del penetration test in modo ordinato.\n* Mostrare tutte le vulnerabilità individuate con impatto e rischio spiegati in modo semplice.\n* Includere prove a supporto (screenshot, comandi, log).\n* Dare indicazioni concrete per risolvere i problemi.\n* Permettere che i test possano essere replicati per verifica o miglioramento.\n\n## **CONTESTO**\n\nIl sistema accede a un archivio strutturato che contiene:\n\n* Risultati tecnici delle scansioni.\n* Dati su strumenti utilizzati e configurazioni rilevate.\n* Dettagli relativi a possibili falle di sicurezza.\n\n## **ISTRUZIONI**\n\n1. **Analizza** tutte le informazioni disponibili.\n\n2. **Per ogni vulnerabilità**:\n\n   * Assegna un **codice identificativo** (es: VULN-001).\n   * Fornisci:\n\n     * Titolo semplice e diretto\n     * Descrizione non troppo tecnica del problema\n     * Gravità (Bassa, Media, Alta, Critica)\n     * Rischio (valutato nel contesto aziendale)\n     * CVSS (punteggio da 1 a 10)\n     * Prove (esempi, screenshot, output)\n     * Se presente, un esempio pratico di sfruttamento (PoC)\n     * Soluzione consigliata\n     * Collegamenti a fonti ufficiali (CVE, OWASP, ecc.)\n\n3. Includi all’inizio una tabella con i risultati principali (Executive Summary).\n\n4. Mantieni il codice HTML conforme, ordinato e stampabile in A4.\n\n## **AVVERTENZE**\n\n* Nessun contenuto inventato: solo informazioni confermate.\n* Mostra solo ciò che è stato realmente eseguito o osservato.\n* Ogni voce deve avere **dati concreti**, niente ipotesi.\n* Evita linguaggio tecnico inutilmente complesso.\n* **Mantieni un layout professionale**, stampabile e facilmente comprensibile anche da chi non ha competenze informatiche.\n* Verifica che il codice HTML sia compatibile con i principali browser e convertibile in PDF.\n\n## **SPECIFICHE HTML**\n\nREQUISITI CRITICI DI OUTPUT:\n\n* La tua risposta deve INIZIARE con: `<!DOCTYPE html>`\n* La tua risposta deve TERMINARE con: `</html>`\n* NON racchiudere la risposta in blocchi di codice come \\`\\`\\`html\n* NON usare formattazione Markdown intorno al codice HTML\n* Genera SOLO il contenuto HTML grezzo, nient’altro\n* Considera questo compito come la creazione di un file `.html`, non la visualizzazione del codice\n\n1. STRUTTURA DEL LAYOUT\n\n* **Titolo principale:** \"Report Penetration Test\", centrato e in grassetto\n* **Data del report:** visibile chiaramente sotto il titolo, con uno spazio evidente (es. margine di 20–30px)\n* **Layout:** centrato, larghezza massima di 900px per ottimizzare la stampa\n* **Margini:** adatti alla stampa in formato A4\n\n2. SEZIONI OBBLIGATORIE\n\nOrganizza il contenuto in sezioni chiaramente separate:\n\n* **Executive Summary**\n* **Reconnaissance**\n* **Network Scanning**\n* **Enumeration**\n* **Vulnerability**\n* **Exploitation**\n* **Recommendations**\n\n3. STILE PER LE VULNERABILITÀ\n\nEvidenzia le vulnerabilità con bordi colorati in base alla gravità:\n\n* **Critica:** bordo rosso spesso (3px), sfondo rosso chiaro (#ffebee)\n* **Alta:** bordo arancione (2px), sfondo arancione chiaro (#fff3e0)\n* **Media:** bordo giallo (2px), sfondo giallo chiaro (#fffde7)\n* **Bassa:** bordo blu (1px), sfondo blu chiaro (#e3f2fd)\n* **Informativa:** bordo grigio (1px), sfondo grigio chiaro (#f5f5f5)\n\n4. TIPOGRAFIA E STILE\n\n* **Formato:** A4\n* **Font principale:** Arial, sans-serif per leggibilità\n* **Font tecnico:** Courier New, monospace per output tecnici\n* **Dimensioni:** 12pt per il testo normale, 14pt per i titoli delle sezioni\n* **Colori:** schema professionale (nero su bianco, accenti colorati per la severità)\n\n5. ELEMENTI SPECIFICI\n\n* **Tabelle:** bordi sottili, intestazione con sfondo grigio chiaro\n* **Sezioni tecniche:** sfondo grigio molto chiaro per distinguerle\n* **Intestazioni:** numerate e con margini coerenti\n* **Footer:** con clausola di riservatezza\n\n#### 6. TEMPLATE CSS INTEGRATO\n\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Penetration Test Report</title>\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            max-width: 900px;\n            margin: 0 auto;\n            padding: 20px;\n            line-height: 1.6;\n            color: #333;\n        }\n        .header {\n            text-align: center;\n            border-bottom: 3px solid #333;\n            padding-bottom: 20px;\n            margin-bottom: 30px;\n            position: relative;\n        }\n        .report-date {\n            position: absolute;\n            right: 0;\n            top: 0;\n            font-size: 14px;\n            color: #666;\n        }\n        .section {\n            margin-bottom: 40px;\n            page-break-inside: avoid;\n        }\n        .section h2 {\n            color: #2c3e50;\n            border-bottom: 2px solid #3498db;\n            padding-bottom: 10px;\n        }\n        .finding {\n            margin: 20px 0;\n            padding: 15px;\n            border-radius: 5px;\n        }\n        .critical { border-left: 5px solid #e74c3c; background-color: #ffebee; }\n        .high { border-left: 5px solid #f39c12; background-color: #fff3e0; }\n        .medium { border-left: 5px solid #f1c40f; background-color: #fffde7; }\n        .low { border-left: 5px solid #3498db; background-color: #e3f2fd; }\n        .info { border-left: 5px solid #95a5a6; background-color: #f5f5f5; }\n        .code {\n            font-family: 'Courier New', monospace;\n            background-color: #f8f9fa;\n            padding: 10px;\n            border-radius: 3px;\n            font-size: 11px;\n        }\n        table {\n            width: 100%;\n            border-collapse: collapse;\n            margin: 15px 0;\n        }\n        th, td {\n            border: 1px solid #ddd;\n            padding: 8px;\n            text-align: left;\n        }\n        th {\n            background-color: #f2f2f2;\n            font-weight: bold;\n        }\n        .executive-summary {\n            background-color: #f8f9fa;\n            padding: 20px;\n            border-radius: 5px;\n            margin-bottom: 30px;\n        }\n        @media print {\n            body { font-size: 12pt; }\n            .section { page-break-inside: avoid; }\n        }\n    </style>\n</head>\n<body>\n    <!-- HTML content will be generated dynamically -->\n</body>\n</html>\n\n## **ESEMPIO OUTPUT**\n\n<!DOCTYPE html>\n<html lang=\"it\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Penetration Test Report</title>\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            max-width: 900px;\n            margin: 0 auto;\n            padding: 20px;\n            line-height: 1.6;\n            color: #333;\n        }\n        .header {\n            text-align: center;\n            font-weight: bold;\n            font-size: 24px;\n            margin-bottom: 10px;\n        }\n        .report-date {\n            text-align: center;\n            font-size: 14px;\n            margin-bottom: 30px;\n            color: #666;\n        }\n        .section {\n            margin-bottom: 40px;\n            page-break-inside: avoid;\n        }\n        .section h2 {\n            color: #2c3e50;\n            border-bottom: 2px solid #3498db;\n            padding-bottom: 10px;\n            font-size: 14pt;\n        }\n        .finding {\n            margin: 20px 0;\n            padding: 15px;\n            border-radius: 5px;\n        }\n        .critical { border-left: 5px solid #e74c3c; background-color: #ffebee; }\n        .high { border-left: 5px solid #f39c12; background-color: #fff3e0; }\n        .medium { border-left: 5px solid #f1c40f; background-color: #fffde7; }\n        .low { border-left: 5px solid #3498db; background-color: #e3f2fd; }\n        .info { border-left: 5px solid #95a5a6; background-color: #f5f5f5; }\n        .executive-summary {\n            background-color: #f8f9fa;\n            padding: 20px;\n            border-radius: 5px;\n            margin-bottom: 30px;\n        }\n        .footer {\n            text-align: center;\n            font-size: 10pt;\n            color: #999;\n            border-top: 1px solid #ccc;\n            padding-top: 20px;\n            margin-top: 50px;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"header\">Penetration Test Report</div>\n    <div class=\"report-date\">22 Luglio 2025</div>\n\n    <div class=\"section\">\n        <h2>1. Executive Summary</h2>\n        <div class=\"executive-summary\">\n            Questo report presenta i risultati di un controllo di sicurezza effettuato sull'infrastruttura aziendale. L’obiettivo è stato identificare eventuali punti deboli che un malintenzionato potrebbe sfruttare. Di seguito sono riportate le criticità riscontrate, con il relativo livello di urgenza e indicazioni pratiche per risolverle.\n        </div>\n    </div>\n\n    <div class=\"section\">\n        <h2>2. Vulnerabilità Rilevate</h2>\n\n        <div class=\"finding high\">\n            <strong>VULN-001: Accesso Remoto non Autorizzato</strong><br><br>\n            <strong>Descrizione:</strong> È stato rilevato che un servizio disponibile via internet consente l’accesso senza autenticazione sicura.<br>\n            <strong>Gravità:</strong> Alta<br>\n            <strong>Rischio:</strong> Elevato, potenziale accesso ai dati sensibili.<br>\n            <strong>CVSS:</strong> 8.6 / 10<br>\n            <strong>Evidenza:</strong> È stato possibile accedere al servizio digitando direttamente l'indirizzo, senza richiedere credenziali.<br>\n            <strong>Proof of Concept:</strong> N/A<br>\n            <strong>Soluzione:</strong> Implementare l’autenticazione sicura e limitare l’accesso tramite firewall.<br>\n            <strong>Riferimenti:</strong> <a href=\"https://owasp.org/www-project-top-ten/\">OWASP Top 10</a> (A05 - Security Misconfiguration)\n        </div>\n\n        <div class=\"finding low\">\n            <strong>VULN-002: Indicizzazione di Cartelle Web</strong><br><br>\n            <strong>Descrizione:</strong> Il server web mostra l’elenco dei file presenti in una cartella pubblica.<br>\n            <strong>Gravità:</strong> Bassa<br>\n            <strong>Rischio:</strong> Limitato, ma può esporre informazioni interne non destinate al pubblico.<br>\n            <strong>CVSS:</strong> 3.7 / 10<br>\n            <strong>Evidenza:</strong> Accedendo a `/uploads/` viene mostrato l’elenco dei file caricati.<br>\n            <strong>Proof of Concept:</strong> Screenshot disponibile<br>\n            <strong>Soluzione:</strong> Disabilitare l’indicizzazione delle cartelle tramite configurazione del server web.<br>\n            <strong>Riferimenti:</strong> <a href=\"https://cwe.mitre.org/data/definitions/548.html\">CWE-548</a>\n        </div>\n    </div>\n\n    <div class=\"section\">\n        <h2>3. Raccomandazioni Generali</h2>\n        <p>\n            - Aggiornare e configurare correttamente i servizi esposti su internet.<br>\n            - Attivare sistemi di controllo accessi (login, autenticazione a più fattori).<br>\n            - Eseguire controlli periodici di sicurezza su tutti i sistemi.<br>\n            - Limitare l’accesso a risorse sensibili tramite firewall o VPN.\n        </p>\n    </div>\n\n    <div class=\"footer\">\n        Questo documento è riservato all'organizzazione destinataria. La distribuzione o modifica senza autorizzazione è vietata.\n    </div>\n</body>\n</html>\n",
+          "maxIterations": 100
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        -1328
+      ],
+      "id": "8b9190c4-985d-4efd-98c3-e86af36e501f",
+      "name": "Report_CLIENT",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "URL/HTML to PDF",
+        "convertType": "htmlToPDF",
+        "html": "={{ $json.output }}",
+        "advancedOptions": {
+          "name": "Report_CLIENT",
+          "paperSize": "a4",
+          "margins": "30px 10px 10px 10px",
+          "expiration": 60
+        }
+      },
+      "type": "n8n-nodes-pdfco.PDFco Api",
+      "typeVersion": 1,
+      "position": [
+        1824,
+        -1456
+      ],
+      "id": "8dc054b7-769b-4e8b-98ae-4f57e2aa6acd",
+      "name": "PDFco_2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "pdfcoApi": {
+          "id": "HXoQ4hn4lFYgxC2F",
+          "name": "PDF.co account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        528,
+        -592
+      ],
+      "id": "c8c129c4-6c06-4fdd-860b-0b82a366b5d9",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IfPqSk1lHvj0n7Kf",
+          "name": "Google Gemini(PaLM) Api saverio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4d885432-839d-4ff7-bb1e-26797c3a895d",
+              "name": "url1",
+              "value": "={{ $('Edit Fields1').item.json.url1 }}",
+              "type": "string"
+            },
+            {
+              "id": "29e45647-066e-4949-866e-663c5df61f7a",
+              "name": "url2",
+              "value": "={{ $('PDFco_2').item.json.url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2064,
+        -1456
+      ],
+      "id": "8e6c35b9-6ac3-4ca1-833c-b55d3e5068f6",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "description": "This tool retrieves information from a vector store",
+        "topK": 100
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        -976
+      ],
+      "id": "037ec79a-d842-40ee-b89c-281e27f2d7c9",
+      "name": "Answer questions with a vector store"
+    },
+    {
+      "parameters": {
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        -768
+      ],
+      "id": "ef2dd36c-8be6-4da4-aa4c-dea59ddd04bb",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "h6D25MulIhF4AxXz",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "maxOutputTokens": 32000,
+          "temperature": 0.1,
+          "topK": 15,
+          "topP": 0.9,
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -976
+      ],
+      "id": "1a230f82-b5e2-409e-a8fc-0e2de4fe06fc",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IfPqSk1lHvj0n7Kf",
+          "name": "Google Gemini(PaLM) Api saverio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "maxOutputTokens": 32000,
+          "temperature": 0.1,
+          "topK": 15,
+          "topP": 0.9,
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        800,
+        -768
+      ],
+      "id": "f68c5bd7-2081-4208-a5a1-5ab1389472b3",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Aj7waY5LT7VoRuch",
+          "name": "Google Gemini(PaLM) Api Cristina"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        -704
+      ],
+      "id": "e865a7fe-ddcd-4814-91d7-a830ce9b3dd4",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IfPqSk1lHvj0n7Kf",
+          "name": "Google Gemini(PaLM) Api saverio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "This tool retrieves information from a vector store",
+        "topK": 100
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1.1,
+      "position": [
+        1536,
+        -1104
+      ],
+      "id": "4b5a6bf9-750b-4d01-a18d-9aea6853924e",
+      "name": "Answer questions with a vector store1"
+    },
+    {
+      "parameters": {
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1296,
+        -896
+      ],
+      "id": "7e915b27-366a-46ff-aabb-43087281e991",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "h6D25MulIhF4AxXz",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "maxOutputTokens": 32000,
+          "temperature": 0.1,
+          "topK": 15,
+          "topP": 0.9,
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        -1104
+      ],
+      "id": "7f1f8b4c-8f15-4004-a24a-40220002c7ef",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IfPqSk1lHvj0n7Kf",
+          "name": "Google Gemini(PaLM) Api saverio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "maxOutputTokens": 32000,
+          "temperature": 0.1,
+          "topK": 15,
+          "topP": 0.9,
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        -896
+      ],
+      "id": "f656233e-009d-4aaf-8764-5169a648b03a",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Aj7waY5LT7VoRuch",
+          "name": "Google Gemini(PaLM) Api Cristina"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dc3734e9-73d2-47c5-a010-aea1a03d2b24",
+              "name": "url1",
+              "value": "={{ $json.url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        -1328
+      ],
+      "id": "73d84511-6530-4a92-af29-09421a8c8f81",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9c86e4b-f2e0-4b8f-afe6-7df97c0d1e21",
+              "name": "Error",
+              "value": "Something went wrong",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        -1120
+      ],
+      "id": "2b1ff0c0-7ba4-49fe-87d2-7e26538ad3a3",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9c86e4b-f2e0-4b8f-afe6-7df97c0d1e21",
+              "name": "Error",
+              "value": "Something went wrong",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1952,
+        -1232
+      ],
+      "id": "f28253ed-0460-409f-9994-c9f40b22d1cb",
+      "name": "Edit Fields3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Report_TECH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report_TECH": {
+      "main": [
+        [
+          {
+            "node": "PDFco_1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDFco_1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report_CLIENT": {
+      "main": [
+        [
+          {
+            "node": "PDFco_2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDFco_2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer questions with a vector store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Report_TECH",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Report_TECH",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Answer questions with a vector store1",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer questions with a vector store1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer questions with a vector store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Report_CLIENT",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Report_CLIENT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Report_CLIENT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cec9452a-36a7-4020-bd00-dc7846a44a41",
+  "meta": {
+    "templateId": "self-building-ai-agent",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b343927cce3775c9dbc821d844e218ccc51be6e61f6f7b42cf1e14e6cc677bdd"
+  },
+  "id": "TDlFFCDLYRsJjGhk",
+  "tags": []
+}

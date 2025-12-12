@@ -1,0 +1,681 @@
+{
+  "name": "Network Scan",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "Status",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -816,
+        80
+      ],
+      "id": "25b372be-6da7-47b6-8572-953134c98ecf",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Status }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=## **ROLE DEFINITION**\n\nYou are an autonomous **AI Network Scanner Agent**, designated as the **second node** in a multi-phase penetration testing pipeline. You specialize **exclusively in scanning** the network to identify open ports, and exposed services.\n\n## **OBJECTIVE**\n\nYour task is to **perform targeted active scanning** to discover:\n\n* Open ports\n* Running services and their versions\n* Basic operating system fingerprints\n* Any signs of misconfigurations or exposed services\n\nAll information must be packaged in a standardized JSON format for the **Enumeration Agent** to consume.\n\n## **CONTEXT**\n\nOperating in the **Scanning phase** of the Penetration Testing Lifecycle (aligned with MITRE ATT\\&CK TA0043 / TA0044), this AI agent uses active techniques to **map out the attack surface** from the Reconnaissance phase.\n\nYou rely on **Kali Linux’s scanning toolset**, focusing on precision, and stealth when appropriate.\n\n## **INSTRUCTIONS**\n\n1. Extract information from the **reconnaissance** phase from the **Vector Store** to best perform the Network Scan phase.\n2. First **perform a complete TCP port scan** to identify **all open ports** (**DO NOT** scan the services immediately, do it in the next step).\n3. Consider whether it is necessary to scan for **ports filtered by firewalls**.\n4. Scan on services and versions **ONLY of open or filtered ports**, Include also in the scan:\n   * OS fingerprinting.\n   * Potential misconfigurations or anomalies.\n5. processes **the output of commands one at a time**, so as not to overload the AI model.\n6. Use both aggressive and stealthy scan types based on context.\n7. Format the output strictly as JSON for the Enumeration Agent.\n\n## **CONSTRAINTS**\n\n* Do **not perform enumeration**, exploitation, or vulnerability validation.\n* Output only JSON (no logs, no text summaries, no HTML).\n* Ensure minimal network noise when possible (use timing/policy profiles).\n\n## **TOOLS AVAILABLE**\n\n* `nmap` (primary scanner)\n* `nmap NSE scripts` (for lightweight service identification)\n* `arp-scan` (optional validation)\n\n## **OUTPUT FORMAT**\n\n```json\n{\n  \"target\": \"\",\n  \"Network_scan\": {\n    \"host\": \"\",\n    \"state\": \"\",\n    \"os\": \"\",\n    \"traceroute\": [\"\"],\n    \"open_ports\": [\n      {\n        \"port\": 2,\n        \"protocol\": \"\",\n        \"service\": \"\",\n        \"version\": \"\"\n      }\n    ],\n    \"scripts_output\": {\n      \"ssh-hostkey\": {\n        \"fingerprint\": \"SHA256:abc123...\",\n        \"key_type\": \"\"\n      },\n      \"http-title\": \"\"\n    },\n    \"notes\": [\"\"]\n  }\n}\n```\n\n## **EXAMPLE OUTPUT**\n\n```json\n{\n  \"target\": \"example.org\",\n  \"Network_scan\": {\n    \"host\": \"93.184.216.34\",\n    \"state\": \"up\",\n    \"os\": \"Ubuntu Linux 20.04\",\n    \"traceroute\": [\"192.168.1.100\", \"192.168.1.1\"],\n    \"open_ports\": [\n      {\n        \"port\": 443,\n        \"protocol\": \"tcp\",\n        \"service\": \"https\",\n        \"version\": \"nginx 1.18.0\"\n      },\n      {\n        \"port\": 21,\n        \"protocol\": \"tcp\",\n        \"service\": \"ftp\",\n        \"version\": \"vsftpd 3.0.3\"\n      }\n    ],\n    \"scripts_output\": {\n      \"ssh-hostkey\": {\n        \"fingerprint\": \"SHA256:abc123...\",\n        \"key_type\": \"RSA\"\n      },\n      \"http-title\": \"Welcome to Apache\"\n    },\n    \"notes\": [\"Port 443 reachable but no HTTP headers returned.\", \"Port 21 Anonymous FTP access suspected.\"]\n  }\n}\n```",
+          "maxIterations": 100
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        80
+      ],
+      "id": "5cc46c46-caae-4680-8316-c54208b956f1",
+      "name": "NetScan AI",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "maxOutputTokens": 32000,
+          "temperature": 0.1,
+          "topK": 15,
+          "topP": 0.9,
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        320
+      ],
+      "id": "433577e5-aa89-4729-b26a-ce49777805d8",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Aj7waY5LT7VoRuch",
+          "name": "Google Gemini(PaLM) Api Cristina"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "[\n  {\n    \"target\": \"\",\n    \"Network_scan\": {\n      \"host\": \"\",\n      \"state\": \"\",\n      \"os\": \"\",\n      \"traceroute\": [\"\"],\n      \"open_ports\": [\n        {\n          \"port\": 2,\n          \"protocol\": \"\",\n          \"service\": \"\",\n          \"version\": \"\"\n        }\n      ],\n      \"scripts_output\": {\n        \"ssh-hostkey\": {\n          \"fingerprint\": \"SHA256:abc123...\",\n          \"key_type\": \"\"\n        },\n        \"http-title\": \"\"\n      },\n      \"notes\": [\"\"]\n    }\n  }\n]",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        320
+      ],
+      "id": "4454fee3-d4f4-4ef3-bca1-77da412885d8",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "maxOutputTokens": 32000,
+          "temperature": 0.1,
+          "topK": 15,
+          "topP": 0.9,
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        528
+      ],
+      "id": "81c5f888-1c07-4f33-8bac-183ccb4f42f0",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Aj7waY5LT7VoRuch",
+          "name": "Google Gemini(PaLM) Api Cristina"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "This tool retrieves information from a vector store",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "topK": 10,
+        "useReranker": true,
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "Phase",
+                "value": "Reconnaissance"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        320
+      ],
+      "id": "9bf10ef9-4333-4115-90be-cd4ea6f1fbe0",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "h6D25MulIhF4AxXz",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        528
+      ],
+      "id": "1d3ea9ca-1334-4a61-ad65-6c2b463ac0f9",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Aj7waY5LT7VoRuch",
+          "name": "Google Gemini(PaLM) Api Cristina"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        800,
+        160
+      ],
+      "id": "6f7c4f80-1203-46a4-b5c9-c44b55a85f29",
+      "name": "Embeddings Google Gemini2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Aj7waY5LT7VoRuch",
+          "name": "Google Gemini(PaLM) Api Cristina"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "maxOutputTokens": 32000,
+          "temperature": 0.1,
+          "topK": 15,
+          "topP": 0.9,
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        320,
+        160
+      ],
+      "id": "980db8db-5317-4140-9eac-fa6186e834d6",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Aj7waY5LT7VoRuch",
+          "name": "Google Gemini(PaLM) Api Cristina"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "rerank-multilingual-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        528
+      ],
+      "id": "b21eaf8a-8d66-4aac-97b1-5093a9b52c29",
+      "name": "Reranker Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "Dewi1kQAtR5HQs2x",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a51d659c-832a-4736-a4d2-1f287b165755",
+              "name": "Status",
+              "value": "Extract the information from the Network scan phase and perform the Enumeration phase",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1424,
+        -80
+      ],
+      "id": "910b5724-aac6-490d-a602-7b61d41ce75a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4620336f-5a95-4d2a-b64a-1acb61742233",
+              "name": "Error",
+              "value": "Something went wrong",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -64,
+        128
+      ],
+      "id": "6ad088d0-e2a7-4c93-9840-9796b46bb9ee",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        816,
+        -80
+      ],
+      "id": "855710a0-1bc0-4282-a6d2-3e8c683a8565",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "h6D25MulIhF4AxXz",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $('Code1').item.json.text }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "Network_Scan",
+                "value": "={{ $('Code').item.json.Network_scan }}"
+              },
+              {
+                "name": "Phase",
+                "value": "Network_Scan"
+              },
+              {
+                "name": "Target",
+                "value": "={{ $('Code').item.json.target }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        928,
+        160
+      ],
+      "id": "07094d64-f169-4065-ba75-9fe6e71869d6",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        368
+      ],
+      "id": "c0b22fc7-42a6-470c-bbdc-40347e34dd95",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "executeOnce": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Execute_Once', ``, 'boolean') }}",
+        "command": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Command', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.executeCommandTool",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        320
+      ],
+      "id": "1c47430f-2b82-468f-9d80-fdf15c7e62ce",
+      "name": "Execute Command",
+      "retryOnFail": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Network_scan }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=In base alle informazioni JSON in input che ricevi, effettua una descrizione dettagliata in italiano della fase di Network Scan, ricordati che ti trovi in un contesto di penetration test, formattalo correttamente per una lettura rivolta ad una persona.\n\n##IMPORTANTE\nNon formattare parole in grassetto o aumentare le dimensioni.\nNon usare **ASSOLUTAMENTE** caratteri speciali come *#`{}[] nell'aoutput e se ci sono **ELIMINALI**.\nUsa i numeri se crei una lista.\nCerca di stipulare una descrizione più pulita possibile.\nInizia la descrizione con: La fase di ..."
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        224,
+        -80
+      ],
+      "id": "bf98c0c4-dccd-41cd-a0c3-b1e0a8e36186",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "metadata"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        -80
+      ],
+      "id": "d9eff893-a32d-4b2c-9814-d945cb1cc3dd",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "function cleanObject(obj) {\n  // Gestione di valori null/undefined\n  if (obj === null || obj === undefined) {\n    return undefined;\n  }\n  \n  // Gestione degli array\n  if (Array.isArray(obj)) {\n    const cleanedArray = obj.map(cleanObject).filter(item => item !== undefined);\n    return cleanedArray.length === 0 ? undefined : cleanedArray;\n  }\n  \n  // Gestione degli oggetti\n  if (typeof obj === 'object') {\n    const cleanedObj = {};\n    for (const [key, value] of Object.entries(obj)) {\n      const cleanedValue = cleanObject(value);\n      if (cleanedValue !== undefined) {\n        cleanedObj[key] = cleanedValue;\n      }\n    }\n    return Object.keys(cleanedObj).length === 0 ? undefined : cleanedObj;\n  }\n  \n  // Gestione stringhe vuote\n  if (obj === '') {\n    return undefined;\n  }\n  \n  // Mantieni altri valori (boolean, numeri, stringe non vuote)\n  return obj;\n}\n\nconst cleaned = cleanObject($input.first().json.output);\nconst result = cleaned !== undefined ? [cleaned] : [];\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -80
+      ],
+      "id": "52bf8fb4-9cf4-4ac1-bd4a-431e30500208",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.text.replace(/[*#`{}\\[\\]]/g, '')\n\nreturn [{ text: data }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        -80
+      ],
+      "id": "2adc662d-7006-423c-92bf-ad5a77fd36f5",
+      "name": "Code1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "NetScan AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NetScan AI": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "NetScan AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "NetScan AI",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "NetScan AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "ai_tool": [
+        [
+          {
+            "node": "NetScan AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a56b9516-0a0a-48eb-98ac-79e80081aaf4",
+  "meta": {
+    "templateId": "self-building-ai-agent",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b343927cce3775c9dbc821d844e218ccc51be6e61f6f7b42cf1e14e6cc677bdd"
+  },
+  "id": "oXGN3MfKhykODj11",
+  "tags": []
+}

@@ -1,0 +1,777 @@
+{
+  "name": "Enumeration",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "Status",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -480,
+        -160
+      ],
+      "id": "e8604bf2-7028-418d-898e-13af774f311d",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Status }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=## ROLE DEFINITION\n\nYou are an autonomous **AI Enumeration Agent**, functioning as the **third node** in a multi-phase penetration testing pipeline. Your sole responsibility is to **enumerate detailed system and service-level information**. You are optimized for extracting rich contextual data such as **User accounts, network shares, and service banners**, without engaging in exploitation or vulnerability validation.\n\n## OBJECTIVE\n\nYour mission is to **enumerate host-level and service-level data** that can later be used in the **Vulnerability Detection phase**, including:\n\n* User accounts and login mechanisms\n* SMB/NFS/FTP/HTTP shares\n* Running software\n* Exposed authentication mechanisms (e.g., login forms, open sessions)\n* Service-specific metadata (e.g., SSL certificates, banners, config leaks)\n* Script-assisted fingerprinting of daemons and services\n\nAll findings must be returned in a standardized JSON format designed for the **Vulnerability Detection Agent** to consume. Your task is to **Perform enumeration on all ports** and **all services**.\n\n## CONTEXT\n\nYou operate within the **Enumeration phase** of the Penetration Testing Lifecycle, aligned with MITRE ATT\\&CK tactics **TA0007 (Discovery)** and **TA0009 (Collection)**. Enumeration is based on previous activities and **does not perform exploitation**. This is an **active discovery phase**, requiring interaction with identified services using authenticated or unauthenticated probes to reveal deeper system-level intel.\n\nYou rely on **Kali Linux** and its suite of advanced enumeration tools. You must **maintain context-awareness**, **minimize detection risk**, and **balance speed with depth** depending on target type and protocol.\n\n## INSTRUCTIONS\n\n**NO EXPLOITATION**\n1. Extract information from the **Network Scan** phase from the **Vector Store** to best perform the Enumeration phase.\n2. For each **host, service and open port**, launch appropriate enumeration probes.\n3. For identified service ports:\n   * HTTP/HTTPS → Enumerate HTTP headers, titles, redirects, technologies, CMSes, known paths\n   * SMB → Enumerate shares, users, OS, sessions, security modes\n   * FTP → Check for anonymous access, banner, directory structure\n   * SSH → Enumerate server version, hostkeys\n   * SNMP → Use public strings to enumerate users, devices, processes\n   * LDAP → Pull organizational unit structures, users, domain info\n   * RDP, Telnet, VNC → Banner grab and protocol fingerprinting\n\n4. Use **OSINT enumeration modules** if metadata is exposed (e.g., via headers, SSL certs).\n5. Process **the output of commands one at a time**, so as not to overload the AI model.\n6. Organize all findings per host.\n7. Format the output strictly as JSON.\n\n## SERVER-SHELL EXECUTION\n\nThe `SERVER-SHELL` tool enables remote execution and system-level commands via a `POST` request interface.\n\n**Usage**\n\nTo execute a command, send a `POST` request with a JSON payload containing the `command` field (already existing).\n\nThe server will execute the command and return the result in the response.\n\n**Execution Guidelines**\n\n**1. Gradual Interaction Required**\nThe shell interaction is designed to be stateful and progressive. Monitor the `waiting_input` Status field in the JSON response to determine whether additional input is expected.\n\n**2. Avoid One-Liners or Chained Commands**\nAvoid executing multiple commands in a single request using operators like &&, ||, or ;. Instead, split complex tasks into logical **step-by-step** instructions, submitting separate requests per command.\n\n**3. Handling Interactive Subprocesses**\nWhen launching tools that invoke interactive sessions (e.g., `nc`, `ftp`, `telnet`, `mysql`, `ssh`, `msfconsole -q`), you must ensure proper termination of the session.\n\n* Use built-in commands like `bye`, `exit` or `quit`\n* Or simulate **Ctrl+C** using the interrupt string 0x03 (e.g. when use `nc`, `telnet`)\n\n**Best Practices**\n\n* **Monitor `Status` in the response**: Ensure it shows `completed` before assuming the command execution has finalized.\n* **Keep commands atomic**: Each command should perform a single clear action with a predictable result.\n* **Avoid malformed or redundant requests**: Unnecessary traffic can interfere with session stability.\n\n**Warnings**\n\n* Do **not** overload the shell with chained or piped commands unless explicitly required and safe.\n* Do **not** leave interactive tools sessions open, consuming resources and leading to instability.\n* Always validate the output and be ready to handle shell prompts appropriately.\n\n## CONSTRAINTS\n\n* **Do not perform exploitation**, vulnerability detection, privilege escalation, brute force, exploit logic, or service disruption.\n* You **must only output structured JSON**, no raw logs or plaintext summaries.\n* Maintain **stealth** wherever applicable (e.g., timing policies, safe NSE categories).\n* Respect scope boundaries—**only enumerate hosts and services explicitly listed**.\n* **Do not perform privilege escalation, brute force, or exploit logic**.\n\n## TOOLS AVAILABLE\n\n* `rpcclient`\n* `ldapsearch`, `snmp-check`\n* `nikto`, `sslscan`\n* `netcat`, `nc`\n* `nmap` + `NSE` scripts (e.g., `smb-enum-users`, `http-enum`, `ftp-anon`)\n* `enum4linux-ng`: Enumerate users, shares, policies, OS, domain\n* `smbclient`: Query shares and access levels\n* `nbtscan`: Gather NetBIOS names and workgroups\n* `snmpwalk`: Extract MIB tree info (system name, contact, device)\n* `onesixtyone`: Quickly brute common SNMP community strings\n* **Banner extraction and auth method parsing (OpenSSH analysis)**\n* `curl -I` or `wget --server-response`: Extract headers\n* `rdp-sec-check`: Extract supported protocols and security features\n* **Banner inspection for Windows RDP versions**\n* `nmap -p<port> --script <name_script>` output parsing (if present in JSON banner)\n* `smtp-user-enum` (banner-derived logic only)\n\n## OUTPUT FORMAT\n\n**Warning:** doors may change.\n\n```json\n{\n  \"target\": \"example.org\",\n  \"enumeration\": {\n    \"domain_or_workgroup\": \"\",\n    \"users\": [\"\"],\n    \"network_shares\": [\"\"],\n    \"services\": [\n      {\n        \"port\": 445,\n        \"protocol\": \"\",\n        \"service\": \"\",\n        \"version\": \"\",\n        \"workgroup\": \"\",\n        \"users\": [\"\"],\n        \"shares\": [\"\"],\n        \"signing_required\": false,\n        \"anonymous_login_allowed\": true\n      },\n      {\n        \"port\": 161,\n        \"protocol\": \"\",\n        \"service\": \"\",\n        \"version\": \"\",\n        \"community_string\": \"\",\n        \"hostname\": \"\",\n        \"contact\": \"\"\n      },\n      {\n        \"port\": 22,\n        \"protocol\": \"\",\n        \"service\": \"\",\n        \"version\": \"\",\n        \"supported_auth_methods\": [\"\"],\n        \"banner\": \"\"\n      },\n      {\n        \"port\": 3389,\n        \"protocol\": \"\",\n        \"service\": \"\",\n        \"version\": \"\",\n        \"encryption_level\": \"\",\n        \"network_level_authentication\": true,\n        \"banner\": \"\"\n      },\n      {\n        \"port\": 80,\n        \"protocol\": \"\",\n        \"service\": \"\",\n        \"version\": \"\",\n        \"title\": \"\",\n        \"server_header\": \"\",\n        \"methods_allowed\": [\"\"]\n      },\n      {\n        \"port\": 21,\n        \"protocol\": \"\",\n        \"service\": \"\",\n        \"version\": \"\",\n        \"anonymous_login_allowed\": true,\n        \"banner\": \"\"\n      },\n      ...\n      {\n        \"port\": 25,\n        \"protocol\": \"\",\n        \"service\": \"\",\n        \"version\": \"\",\n        \"banner\": \"\",\n        \"extensions\": [\"\"]\n      }\n    ]\n  }\n}\n```\n\n## EXAMPLE OUTPUT\n\n```json\n{\n  \"target\": \"example.org\",\n  \"enumeration\": {\n    \"domain_or_workgroup\": \"WORKGROUP\",\n    \"users\": [\"ftp\", \"www-data\", \"nobody\"],\n    \"network_shares\": [\"public\", \"webdata\"],\n    \"services\": [\n      {\n        \"port\": 21,\n        \"protocol\": \"tcp\",\n        \"service\": \"ftp\",\n        \"version\": \"vsftpd 3.0.3\",\n        \"workgroup\": \"\",\n        \"users\": [\"anonymous\"],\n        \"shares\": [],\n        \"signing_required\": false,\n        \"anonymous_login_allowed\": true,\n        \"banner\": \"220 (vsFTPd 3.0.3)\"\n      },\n      {\n        \"port\": 23,\n        \"protocol\": \"tcp\",\n        \"service\": \"telnet\",\n        \"version\": \"Linux telnetd\",\n        \"supported_auth_methods\": [\"password\"],\n        \"banner\": \"Ubuntu Telnet Service\"\n      },\n      {\n        \"port\": 111,\n        \"protocol\": \"tcp\",\n        \"service\": \"rpcbind\",\n        \"version\": \"2 (RPC #100000)\",\n        \"community_string\": \"\",\n        \"hostname\": \"\",\n        \"contact\": \"\"\n      },\n      {\n        \"port\": 139,\n        \"protocol\": \"tcp\",\n        \"service\": \"netbios-ssn\",\n        \"version\": \"Samba smbd 4.11.6\",\n        \"workgroup\": \"WORKGROUP\",\n        \"users\": [\"guest\", \"admin\"],\n        \"shares\": [\"public\", \"webdata\"],\n        \"signing_required\": false,\n        \"anonymous_login_allowed\": false\n      },\n      {\n        \"port\": 443,\n        \"protocol\": \"tcp\",\n        \"service\": \"https\",\n        \"version\": \"nginx 1.18.0\",\n        \"title\": \"Welcome to Apache\",\n        \"server_header\": \"nginx/1.18.0\",\n        \"methods_allowed\": [\"GET\", \"POST\", \"HEAD\"]\n      }\n    ]\n  }\n}\n```",
+          "maxIterations": 100
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        -160
+      ],
+      "id": "0379f472-240f-435e-bc40-4db10e99ea50",
+      "name": "Enum AI",
+      "notesInFlow": false,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "function cleanObject(obj) {\n  // Gestione di valori null/undefined\n  if (obj === null || obj === undefined) {\n    return undefined;\n  }\n  \n  // Gestione degli array\n  if (Array.isArray(obj)) {\n    const cleanedArray = obj.map(cleanObject).filter(item => item !== undefined);\n    return cleanedArray.length === 0 ? undefined : cleanedArray;\n  }\n  \n  // Gestione degli oggetti\n  if (typeof obj === 'object') {\n    const cleanedObj = {};\n    for (const [key, value] of Object.entries(obj)) {\n      const cleanedValue = cleanObject(value);\n      if (cleanedValue !== undefined) {\n        cleanedObj[key] = cleanedValue;\n      }\n    }\n    return Object.keys(cleanedObj).length === 0 ? undefined : cleanedObj;\n  }\n  \n  // Gestione stringhe vuote\n  if (obj === '') {\n    return undefined;\n  }\n  \n  // Mantieni altri valori (boolean, numeri, stringe non vuote)\n  return obj;\n}\n\nconst cleaned = cleanObject($input.first().json.output);\nconst result = cleaned !== undefined ? [cleaned] : [];\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        -336
+      ],
+      "id": "1a25f5b1-d06b-4966-ae2f-35116a8d644b",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "[\n  {\n    \"target\": \"\",\n    \"enumeration\": {\n      \"domain_or_workgroup\": \"\",\n      \"users\": [\"\"],\n      \"network_shares\": [\"\"],\n      \"services\": [\n        {\n          \"port\": 1,\n          \"protocol\": \"\",\n          \"service\": \"\",\n          \"version\": \"\",\n          \"workgroup\": \"\",\n          \"users\": [\"\"],\n          \"shares\": [\"\"],\n          \"signing_required\": false,\n          \"anonymous_login_allowed\": true\n        },\n        {\n          \"port\": 1,\n          \"protocol\": \"\",\n          \"service\": \"\",\n          \"version\": \"\",\n          \"community_string\": \"\",\n          \"hostname\": \"\",\n          \"contact\": \"\"\n        },\n        {\n          \"port\": 2,\n          \"protocol\": \"\",\n          \"service\": \"\",\n          \"version\": \"\",\n          \"supported_auth_methods\": [\"\"],\n          \"banner\": \"\"\n        },\n        {\n          \"port\": 3,\n          \"protocol\": \"\",\n          \"service\": \"\",\n          \"version\": \"\",\n          \"encryption_level\": \"\",\n          \"network_level_authentication\": true,\n          \"banner\": \"\"\n        },\n        {\n          \"port\": 8,\n          \"protocol\": \"\",\n          \"service\": \"\",\n          \"version\": \"\",\n          \"title\": \"\",\n          \"server_header\": \"\",\n          \"methods_allowed\": [\"\"]\n        },\n        {\n          \"port\": 2,\n          \"protocol\": \"\",\n          \"service\": \"\",\n          \"version\": \"\",\n          \"anonymous_login_allowed\": true,\n          \"banner\": \"\"\n        },\n        {\n          \"port\": 2,\n          \"protocol\": \"\",\n          \"service\": \"\",\n          \"version\": \"\",\n          \"banner\": \"\",\n          \"extensions\": [\"\"]\n        }\n      ]\n    }\n  }\n]",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        64
+      ],
+      "id": "14dd5a31-6d2f-4551-9f44-cb123837e794",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "maxOutputTokens": 32000,
+          "temperature": 0.1,
+          "topK": 15,
+          "topP": 0.9,
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        240,
+        272
+      ],
+      "id": "1a9f0696-9dc9-417c-95b4-33f90122ec27",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "yexWYk9HUgUnoeVZ",
+          "name": "Google Gemini(PaLM) Api Raff"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "maxOutputTokens": 32000,
+          "temperature": 0.1,
+          "topK": 15,
+          "topP": 0.9,
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        64
+      ],
+      "id": "43d28819-2ba1-4d57-bb3a-b239be7c3f72",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "yexWYk9HUgUnoeVZ",
+          "name": "Google Gemini(PaLM) Api Raff"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Makes an HTTP request with server-shell and returns the response data",
+        "method": "POST",
+        "url": "http://localhost:5000/execute/1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "command",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -256,
+        64
+      ],
+      "id": "e457febf-c3ea-4028-b85e-eea97a46d19e",
+      "name": "Server-shell",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        -96
+      ],
+      "id": "a6502313-43a3-4d05-9b1b-499bcaf228f9",
+      "name": "Embeddings Google Gemini2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "yexWYk9HUgUnoeVZ",
+          "name": "Google Gemini(PaLM) Api Raff"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "maxOutputTokens": 32000,
+          "temperature": 0.1,
+          "topK": 15,
+          "topP": 0.9,
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        800,
+        -96
+      ],
+      "id": "ac9833c9-821e-4437-9123-2704497b1b6d",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "yexWYk9HUgUnoeVZ",
+          "name": "Google Gemini(PaLM) Api Raff"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a51d659c-832a-4736-a4d2-1f287b165755",
+              "name": "Status",
+              "value": "Extract the information from the Enumeration phase and perform the Vulnerability scan phase",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1984,
+        -336
+      ],
+      "id": "b6074e3d-9b8c-4c5d-9ea1-b9ecc54f89be",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1152,
+        -336
+      ],
+      "id": "04ac19e7-6f7a-45d7-8e48-35235ce2d98e",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "h6D25MulIhF4AxXz",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $('Code1').item.json.text }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "Enumeration",
+                "value": "={{ $('Code').item.json.enumeration }}"
+              },
+              {
+                "name": "Phase",
+                "value": "Enumeration"
+              },
+              {
+                "name": "Target",
+                "value": "={{ $('Code').item.json.target }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1264,
+        -96
+      ],
+      "id": "73eb4e77-c1e5-48e0-98a1-2f08e8613f8b",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        112
+      ],
+      "id": "587f9e40-6c81-4a2f-b34c-cdf9952dc165",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.enumeration }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=In base alle informazioni JSON in input che ricevi, effettua una descrizione dettagliata in italiano della fase di Enumeration, ricordati che ti trovi in un contesto di penetration test, formattalo correttamente per una lettura rivolta ad una persona.\n\n##IMPORTANTE\nNon formattare parole in grassetto o aumentare le dimensioni.\nNon usare **ASSOLUTAMENTE** caratteri speciali come *#`{}[] nell'aoutput e se ci sono **ELIMINALI**.\nUsa i numeri se crei una lista.\nCerca di stipulare una descrizione più pulita possibile.\nInizia la descrizione con: La fase di ..."
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        560,
+        -336
+      ],
+      "id": "27554b14-2c3c-4657-8b7c-f9dfe12bd513",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9c86e4b-f2e0-4b8f-afe6-7df97c0d1e21",
+              "name": "Error",
+              "value": "Something went wrong",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        512,
+        -128
+      ],
+      "id": "59ac60f6-95b3-4846-9c1f-4a41e7db5099",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "This tool retrieves information from a vector store",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "topK": 15,
+        "useReranker": true,
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "Phase",
+                "value": "Network_Scan"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        64
+      ],
+      "id": "cb2b327f-beb3-41d7-83cd-fbd0df8be437",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "h6D25MulIhF4AxXz",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        272
+      ],
+      "id": "6a230e1e-b75f-4012-a377-72fe73c075a4",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "yexWYk9HUgUnoeVZ",
+          "name": "Google Gemini(PaLM) Api Raff"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "rerank-multilingual-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        32,
+        272
+      ],
+      "id": "e756eee9-a81b-43c5-803e-27afe12d295a",
+      "name": "Reranker Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "Dewi1kQAtR5HQs2x",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "http://localhost:5000/reset/1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1776,
+        -336
+      ],
+      "id": "56c0a576-e297-4c78-83bd-383a9223b6f7",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "metadata"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        -336
+      ],
+      "id": "45cb31a0-82b2-4724-abda-f0c7647e6d29",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.text.replace(/[*#`{}\\[\\]]/g, '')\n\nreturn [{ text: data }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        -336
+      ],
+      "id": "092e6074-aa5b-452a-8747-8c77b99b6357",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "http://localhost:5000/reset/1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        272,
+        -128
+      ],
+      "id": "0d3f55cb-42ee-4280-acf4-1732a201ddfe",
+      "name": "HTTP Request1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Enum AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Enum AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enum AI": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Enum AI",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Server-shell": {
+      "ai_tool": [
+        [
+          {
+            "node": "Enum AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Enum AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d8b56762-8077-476d-be16-c32ef268d51c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b343927cce3775c9dbc821d844e218ccc51be6e61f6f7b42cf1e14e6cc677bdd"
+  },
+  "id": "m9YPeQxwYCCp7OJP",
+  "tags": []
+}

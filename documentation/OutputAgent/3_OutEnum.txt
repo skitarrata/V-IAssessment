@@ -1,0 +1,149 @@
+[
+  {
+    "source": {
+      "from_network_scan": {
+        "notes": [
+          "Anonymous FTP login allowed on port 21.",
+          "FTP PASV IP mismatch detected on port 21.",
+          "HTTP title \"Metasploitable2 - Linux\" found on port 80.",
+          "Samba 3.0.20-Debian detected on port 445.",
+          "SMB message signing is disabled on port 445 (dangerous configuration).",
+          "Service on port 1524 fingerprint suggests a shell.",
+          "UnrealIRCd detected on port 6667.",
+          "SMB accessible on 445/tcp.",
+          "SMB over NetBIOS on 139/tcp connection refused.",
+          "Supported SMB dialect: SMB 1.0.",
+          "Server allows null session via SMB/RPC.",
+          "OS via SMB/RPC: Linux/Unix (Samba 3.0.20-Debian), OS version: '4.9'.",
+          "Native LAN manager: Samba 3.0.20-Debian.",
+          "Found 35 users via RPC.",
+          "Found 5 shares via RPC.",
+          "Share 'IPC$' mapping OK, listing NOT SUPPORTED.",
+          "Share 'tmp' mapping OK, listing OK.",
+          "Shares 'ADMIN$', 'opt', 'print$' mapping DENIED.",
+          "SMB connection error on port 445/tcp for policies via RPC: STATUS_ACCESS_DENIED."
+        ],
+        "technologies": [
+          "Apache/2.2.8",
+          "PHP/5.2.4-2ubuntu5.10"
+        ],
+        "os": "Linux 4.15 - 5.19, Linux 5.0 - 5.14",
+        "host": "174.138.7.127"
+      }
+    },
+    "target": "skita.saveriovale.me",
+    "enumeration": [
+      {
+        "services": [
+          {
+            "port": 21,
+            "protocol": "tcp",
+            "version": "vsftpd 2.3.4",
+            "anonymous_login_allowed": true,
+            "service": "ftp",
+            "banner": "220 (vsFTPd 2.3.4)"
+          },
+          {
+            "service": "telnet",
+            "protocol": "tcp",
+            "banner": "Linux telnetd",
+            "version": "Linux telnetd",
+            "port": 23
+          },
+          {
+            "port": 25,
+            "protocol": "tcp",
+            "service": "smtp"
+          },
+          {
+            "server_header": "Apache/2.2.8 (Ubuntu) DAV/2",
+            "title": "Metasploitable2 - Linux",
+            "protocol": "tcp",
+            "service": "http",
+            "version": "Apache httpd 2.2.8 ((Ubuntu) DAV/2)",
+            "port": 80
+          },
+          {
+            "workgroup": "WORKGROUP",
+            "users": [
+              "guest",
+              "anonymous"
+            ],
+            "version": "Samba 3.0.20-Debian",
+            "anonymous_login_allowed": true,
+            "shares": [
+              "ADMIN$",
+              "IPC$",
+              "opt",
+              "print$",
+              "tmp"
+            ],
+            "port": 445,
+            "signing_required": false,
+            "service": "SMB",
+            "protocol": "tcp"
+          },
+          {
+            "port": 1524,
+            "service": "ingreslock",
+            "banner": "Service on port 1524 fingerprint suggests a shell.",
+            "protocol": "tcp",
+            "version": "?"
+          },
+          {
+            "service": "irc",
+            "port": 6667,
+            "protocol": "tcp",
+            "version": "Unreal3.2.8.1",
+            "banner": "Unreal3.2.8.1. irc.Metasploitable.LAN"
+          }
+        ],
+        "domain_or_workgroup": "WORKGROUP",
+        "users": [
+          "root",
+          "daemon",
+          "bin",
+          "sys",
+          "sync",
+          "games",
+          "man",
+          "lp",
+          "mail",
+          "news",
+          "uucp",
+          "proxy",
+          "www-data",
+          "backup",
+          "list",
+          "irc",
+          "gnats",
+          "libuuid",
+          "dhcp",
+          "syslog",
+          "klog",
+          "sshd",
+          "bind",
+          "postfix",
+          "ftp",
+          "postgres",
+          "mysql",
+          "tomcat55",
+          "distccd",
+          "telnetd",
+          "proftpd",
+          "msfadmin",
+          "user",
+          "service",
+          "nobody"
+        ],
+        "network_shares": [
+          "ADMIN$",
+          "IPC$",
+          "opt",
+          "print$",
+          "tmp"
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,133 @@
+[
+  {
+    "vulnerable_scan": [
+      {
+        "detected_vulnerabilities": [
+          {
+            "references": [
+              "https://nvd.nist.gov/vuln/detail/CVE-2011-2523",
+              "https://www.exploit-db.com/exploits/17491"
+            ],
+            "version": "vsftpd 2.3.4",
+            "severity": "critical",
+            "description": "vsftpd version 2.3.4 contains a backdoor that allows command execution via a crafted username.",
+            "port": 21,
+            "cve_ids": [
+              "CVE-2011-2523"
+            ],
+            "exploitable": true,
+            "cvss_score": 10,
+            "service": "ftp",
+            "vulnerability_type": "Backdoor command execution"
+          },
+          {
+            "service": "telnet",
+            "port": 23,
+            "severity": "medium",
+            "version": "Linux telnetd",
+            "description": "Telnet transmits data, including login credentials, in plaintext, making it vulnerable to eavesdropping.",
+            "vulnerability_type": "Insecure protocol",
+            "exploitable": false
+          },
+          {
+            "version": "Apache httpd 2.2.8 ((Ubuntu) DAV/2)",
+            "description": "Running severely outdated versions of Apache (2.2.8) and PHP (5.2.4) exposes the system to numerous known vulnerabilities, including potential remote code execution and denial of service.",
+            "cvss_score": 7.5,
+            "port": 80,
+            "cve_ids": [
+              "CVE-2012-0053"
+            ],
+            "exploitable": true,
+            "severity": "high",
+            "service": "http",
+            "references": [
+              "https://nvd.nist.gov/vuln/detail/CVE-2012-0053"
+            ],
+            "vulnerability_type": "Outdated software / Multiple vulnerabilities"
+          },
+          {
+            "description": "The Samba usermap_script vulnerability in version 3.0.20 allows unauthenticated attackers to execute arbitrary commands.",
+            "cvss_score": 10,
+            "port": 445,
+            "exploitable": true,
+            "cve_ids": [
+              "CVE-2007-2447"
+            ],
+            "vulnerability_type": "Remote Command Execution",
+            "references": [
+              "https://nvd.nist.gov/vuln/detail/CVE-2007-2447",
+              "https://www.exploit-db.com/exploits/16320"
+            ],
+            "service": "netbios-ssn",
+            "version": "Samba smbd 3.0.20-Debian",
+            "severity": "critical"
+          },
+          {
+            "version": "Samba smbd 3.0.20-Debian",
+            "service": "netbios-ssn",
+            "port": 445,
+            "vulnerability_type": "Weak configuration (SMB Signing Disabled)",
+            "severity": "medium",
+            "exploitable": false,
+            "description": "SMB message signing is disabled, making the service vulnerable to Man-in-the-Middle attacks."
+          },
+          {
+            "version": "Samba smbd 3.0.20-Debian",
+            "port": 445,
+            "exploitable": false,
+            "severity": "low",
+            "description": "Anonymous login is permitted, potentially allowing unauthorized access to shared resources.",
+            "vulnerability_type": "Weak configuration (Anonymous Login Allowed)",
+            "service": "netbios-ssn"
+          },
+          {
+            "severity": "critical",
+            "service": "ingreslock",
+            "vulnerability_type": "Exposed service (Command Execution)",
+            "port": 1524,
+            "exploitable": true,
+            "description": "The service on port 1524 appears to expose a command shell, allowing unauthenticated command execution. This is a known insecure configuration on Metasploitable2.",
+            "version": "?"
+          },
+          {
+            "exploitable": true,
+            "port": 6667,
+            "severity": "critical",
+            "description": "UnrealIRCd version 3.2.8.1 contains a backdoor that allows remote command execution.",
+            "references": [
+              "https://nvd.nist.gov/vuln/detail/CVE-2010-2075",
+              "https://www.exploit-db.com/exploits/13851"
+            ],
+            "version": "UnrealIRCd",
+            "cvss_score": 10,
+            "vulnerability_type": "Backdoor command execution",
+            "cve_ids": [
+              "CVE-2010-2075"
+            ],
+            "service": "irc"
+          }
+        ]
+      }
+    ],
+    "target": "skita.saveriovale.me",
+    "source": {
+      "from_enumeration": {
+        "technologies": [
+          "Apache/2.2.8",
+          "PHP/5.2.4-2ubuntu5.10"
+        ],
+        "notes": [
+          "Anonymous FTP login allowed on port 21.",
+          "FTP PASV IP mismatch detected on port 21.",
+          "HTTP title \"Metasploitable2 - Linux\" found on port 80.",
+          "Samba 3.0.20-Debian detected on port 445.",
+          "SMB message signing is disabled on port 445 (dangerous configuration).",
+          "Service on port 1524 fingerprint suggests a shell.",
+          "UnrealIRCd detected on port 6667."
+        ],
+        "host": "174.138.7.127",
+        "os": "Linux 4.15 - 5.19, Linux 5.0 - 5.14"
+      }
+    }
+  }
+]

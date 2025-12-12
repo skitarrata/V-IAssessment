@@ -1,0 +1,513 @@
+{
+  "name": "Project Penetration Test GenAI",
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {
+          "maxOutputTokens": 32000,
+          "temperature": 0.1,
+          "topK": 15,
+          "topP": 0.9,
+          "safetySettings": {
+            "values": [
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        448
+      ],
+      "id": "42b9a8db-790c-4cef-b43e-cc9cef36167f",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "icvnyJUEHu27uadB",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.target }}",
+        "options": {
+          "systemMessage": "=## **ROLE DEFINITION**\nYou are an **AI Orchestrator Agent** responsible for coordinating a complete penetration testing engagement. You do not perform individual actions such as scanning or exploitation yourself. Instead, you **sequentially command and monitor specialized AI agents**, each dedicated to a distinct phase of the penetration test.\n\n## **OBJECTIVE**\nEnsure all phases of a penetration test are conducted in order, with each agent receiving the **JSON input** from the prior phase's output, the Report AI agent will return two URLs that should be sent to the respond to webhook node.\n\n## **CONTEXT**\nThe penetration test consists of the following **ordered phases**:\n1. **Reconnaissance** – (Recon AI).\n2. **Network Scan** – (NetScan AI).\n3. **Enumeration** – (Enum AI).\n4. **Vulnerability Detection** – (Vuln AI).\n5. **Exploitation and Post-exploitation** – (Exploit AI).\n7. **Reporting** – (Report AI).\nEach phase **depends on the output of the previous one**.\n\n## **INSTRUCTIONS**\n1. **Start with input:** A domain, subdomain or IP address from webhook input.\n2. **Call Recon AIi** with: {\"target\": \"domain_or_ip\"}\n3. **Call NetScan AI** with: {\"Status\": \"...\"}\n4. **Call Enum AI** with: {\"Status\": \"...\"}\n5. **Call Vuln AI** with: {\"Status\": \"...\"}\n6. **Call Exploit AI** with: {\"Status\": \"...\"}\n7. **Call Report AI** with: {\"Status\": \"...\"}\n\n**CRITICAL**: \n   * Use exact tool names and parameter formats as specified above.\n   * Inject data into the next step.\n8. Please pay **ATTENTION** to the JSON formatting.\n\n## **ERROR HANDLING**\nIf a tool call fails:\n1. Check parameter format matches expected schema exactly\n2. Retry with corrected parameters\n3. If still failing, skip that phase and continue with available data\n4. Note the failure in the final report\n\n## **CONSTRAINTS**\n* Do not perform any active hacking tasks yourself.\n* Do not proceed to the next phase until the current one completes and is validated.\n* Only pass on **relevant fields** to avoid token bloat.\n* Maintain strict order of operations; **no skipping** phases unless critical.\n\n## **TOOLS AVAILABLE (Agents to Invoke)**\n* `Recon AI`\n* `NetScan AI`\n* `Enum AI`\n* `Vuln AI`\n* `Exploit AI`\n* `Report AI`",
+          "maxIterations": 100
+        }
+      },
+      "id": "cbef4090-10b9-46de-9b71-057431d9f7be",
+      "name": "Orchestrator",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -128,
+        160
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "cNhEHmChYX3zDt8x",
+          "mode": "list",
+          "cachedResultName": "Reconnaissance"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $('Webhook').item.json.body.target }}"
+          },
+          "matchingColumns": [
+            "target"
+          ],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        448
+      ],
+      "id": "5e301d17-890c-4b16-84bb-5a251a81412f",
+      "name": "Recon AI"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "oXGN3MfKhykODj11",
+          "mode": "list",
+          "cachedResultName": "Network Scan"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        144,
+        448
+      ],
+      "id": "c93505b1-af8d-4d7e-a545-dace69019c18",
+      "name": "NetScan AI"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "m9YPeQxwYCCp7OJP",
+          "mode": "list",
+          "cachedResultName": "Enumeration"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "InputEnum"
+          ],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        448
+      ],
+      "id": "4a584d48-0779-4350-a911-f83a0ac8ba97",
+      "name": "Enum AI"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "dKKssabGF0CiVXsV",
+          "mode": "list",
+          "cachedResultName": "Vulnerability Scan"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            ""
+          ],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        448
+      ],
+      "id": "4d89c966-ed2a-4ad0-927a-7932552f0ba4",
+      "name": "Vuln AI"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "HVaGAhlYIGSLsEag",
+          "mode": "list",
+          "cachedResultName": "Exploitation"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "Status"
+          ],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        448
+      ],
+      "id": "a9daeb55-9d69-4276-9bb1-c3878549edbc",
+      "name": "Exploit AI"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "TDlFFCDLYRsJjGhk",
+          "mode": "list",
+          "cachedResultName": "Reporting"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "Status"
+          ],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        448
+      ],
+      "id": "48bfa325-fdf7-4d18-91a4-51c5dda5ee04",
+      "name": "Report AI"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "scan",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        160
+      ],
+      "id": "eb9dbc7a-cc3b-4916-853e-d924e0b6219e",
+      "name": "Webhook",
+      "webhookId": "0f5483ff-1c10-4c5e-8c76-d879f04b5224"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"url\":\"{{ $json.text1 }}\",\n  \"download_url\": \"{{ $json.text2 }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        512,
+        160
+      ],
+      "id": "08a6f127-cf8b-4a36-b805-27125f4118d6",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawText =$input.first().json.output;\n\n// Divide il testo in righe\nconst lines = rawText.split('\\n');\n\n// Crea oggetti con chiavi numerate (text1, text2, ...)\nconst output = {};\nlines.map(line => line.trim())\n     .filter(line => line !== '')\n     .forEach((line, index) => {\n         output[`text${index + 1}`] = line;\n     });\n\nreturn [output];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        160
+      ],
+      "id": "38d8f4e4-9142-4f58-aedd-84136c5a408f",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "https://dpsmnnoabiqgqlnalnhx.supabase.co/rest/v1/documents?id=neq.0",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwc21ubm9hYmlxZ3FsbmFsbmh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI3NDQyNDUsImV4cCI6MjA2ODMyMDI0NX0.6DiHphfXjzCuDLQfMVpbcZgxE4-I7NF_d2_3Evf097Q"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        160
+      ],
+      "id": "9fcae9c4-e568-4872-ab5d-17a798e9c168",
+      "name": "HTTP Request",
+      "credentials": {
+        "supabaseApi": {
+          "id": "h6D25MulIhF4AxXz",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orchestrator": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Recon AI": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NetScan AI": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enum AI": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vuln AI": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exploit AI": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report AI": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ca2d0d17-f3fa-461b-a01c-060af30c6d18",
+  "meta": {
+    "templateId": "self-building-ai-agent",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b343927cce3775c9dbc821d844e218ccc51be6e61f6f7b42cf1e14e6cc677bdd"
+  },
+  "id": "XSpt0AI9aZ1j5uCP",
+  "tags": []
+}
